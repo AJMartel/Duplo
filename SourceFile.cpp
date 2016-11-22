@@ -142,12 +142,15 @@ bool SourceFile::isSourceLine(const std::string& line){
                 {
                     return false;
                 }
-                // look for preprocessor marker in start of string
-                const std::string PreProc_CS = "using";
+                // look for other markers to avoid
+                const std::string PreProc_CS[] = { "using", "private", "protected", "public" };
 
-                return std::string::npos == tmp.find(PreProc_CS.c_str(), 0, PreProc_CS.length());
-                }
-                break;
+                for (int i=0; i<4; i++ ) {
+                 if (tmp.find(PreProc_CS[i].c_str(), 0, PreProc_CS[i].length())!=std::string::npos)
+                    return false;
+                  }
+               }
+               break;
 
             case FileType::FILETYPE_VB  :
                 {
@@ -165,7 +168,7 @@ bool SourceFile::isSourceLine(const std::string& line){
     bool bRet = (tmp.size() >= m_minChars);
     assert(bRet);
     
-    return bRet;
+    return bRet && std::find_if(tmp.begin(), tmp.end(), isalpha)!=tmp.end();
 }
 
 int SourceFile::getNumOfLines(){
