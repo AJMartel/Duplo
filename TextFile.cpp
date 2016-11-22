@@ -18,6 +18,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <memory>
 
 #include "TextFile.h"
 
@@ -39,12 +40,11 @@ bool TextFile::readAll(std::string& all){
     if(inFile.is_open()){
         unsigned int len = inFile.tellg();
         inFile.seekg(0, std::ios::beg);
-        char* buffer = new char[len];
-        inFile.read(buffer, len);
+        auto buffer = std::make_unique<char[ ]>( len );
+        inFile.read(buffer.get( ), len);
         inFile.close();
         std::ostringstream os;
-        os.write(buffer, len);
-        delete [ ] buffer;
+        os.write(buffer.get( ), len);
         all = os.str();
     } else {
         std::cout << "Error: Can't open file: " <<  m_fileName <<  ". File doesn't exist or access denied.\n";
