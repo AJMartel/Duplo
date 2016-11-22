@@ -1,5 +1,10 @@
 # Duplo (C/C++/Java Duplicate Source Code Block Finder)
 
+Personal fork to add support for qml files (very similar or identical to javascript)
+
+The rest of the README file is of the project from where I forked.
+
+
 # GENERAL INFORMATION
 
 Duplicated source code blocks can harm maintainability of software systems.
