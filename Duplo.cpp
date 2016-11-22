@@ -131,7 +131,7 @@ int Duplo::process(SourceFile* pSource1, SourceFile* pSource2, std::ostream& out
     // Scan vertical part
     for(unsigned int y=0; y<m; y++){
         unsigned int seqLen=0;
-        int maxX = MIN(n, m-y);
+        int maxX = std::min(n, m-y);
         for(int x=0; x<maxX; x++){
             if(m_pMatrix[x+n*(y+x)] == MATCH){
                 seqLen++;
@@ -163,7 +163,7 @@ int Duplo::process(SourceFile* pSource1, SourceFile* pSource2, std::ostream& out
         // Scan horizontal part
         for(unsigned int x=1; x<n; x++){
             unsigned int seqLen=0;
-            int maxY = MIN(m, n-x);
+            int maxY = std::min(m, n-x);
             for(int y=0; y<maxY; y++){
                 if(m_pMatrix[x+y+n*y] == MATCH){
                     seqLen++;
