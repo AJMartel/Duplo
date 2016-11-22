@@ -55,7 +55,7 @@ int ArgumentParser::getInt(const char *s, int defaultValue){
 float ArgumentParser::getFloat(const char *s, float defaultValue){
     for(int i=0;i<argc;i++){
         if(strcmp(argv[i], s) == 0 && argc > i+1){
-            return (float)atof(argv[i+1]);
+            return atof(argv[i+1]);
         }
     }
     
