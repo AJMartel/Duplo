@@ -14,6 +14,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <algorithm>
 #include "SourceLine.h"
 
 #include "SourceFile.h"
@@ -29,14 +30,17 @@ SourceLine::SourceLine(std::string& line, int lineNumber){
     std::string cleanLine;
 
     //Remove all white space and noise (tabs etc)
-    for(int i=0;i<(int)line.size();i++){
+    for(int i=0;i<static_cast<int>( line.size() );i++){
         if(line[i] > ' '){
             cleanLine.push_back(line[i]);
         }
     }
 
+
     // MD5 hash
-    long long* pDigest = (long long*)HashUtil::getMD5Sum((unsigned char*)cleanLine.c_str(), (int)cleanLine.size());
+    std::array< unsigned char, 16> Digest;
+    HashUtil::getMD5Sum((unsigned char*)cleanLine.c_str(), (int)cleanLine.size(), Digest);
+    long long* pDigest = (long long *)Digest.data( );
     m_hashHigh = pDigest[0];
     m_hashLow = pDigest[1];
 }

@@ -60,12 +60,12 @@ void HashUtil::MD5Update(MD5_CTX *context, unsigned char *input, unsigned int in
 /**
  * MD5 finalization. Ends an MD5 message-digest operation, writing the the message digest and zeroizing the context.
  */
-void HashUtil::MD5Final(unsigned char digest[16], MD5_CTX *context){
-    unsigned char bits[8];
+void HashUtil::MD5Final( std::array<unsigned char, 16> & digest, MD5_CTX *context){
+    std::array<unsigned char, 8> bits;
     unsigned int index, padLen;
 
     // Save number of bits
-    MD5_Encode(bits, context->count, 8);
+    MD5_Encode<8>(bits, context->count);
 
 
     // Pad out to 56 mod 64.
@@ -74,10 +74,10 @@ void HashUtil::MD5Final(unsigned char digest[16], MD5_CTX *context){
     MD5Update (context, m_PADDING, padLen);
 
     // Append length (before padding)
-    MD5Update (context, bits, 8);
+    MD5Update (context, bits.data( ), 8);
       
     // Store state in digest
-    MD5_Encode(digest, context->state, 16);
+    MD5_Encode<16>(digest, context->state);
 
     // Zeroize sensitive information.
     MD5_memset ((unsigned char*)context, 0, sizeof (*context));
@@ -173,18 +173,6 @@ void HashUtil::MD5Transform(unsigned int state[4], unsigned char block[64]){
 }
 
 /**
- * Encodes input (unsigned int) into output (unsigned char). Assumes len is a multiple of 4.
- */
-void HashUtil::MD5_Encode(unsigned char *output, unsigned int *input, unsigned int len){
-    for(unsigned int i = 0, j = 0; j < len; i++, j += 4){
-        output[j] = (unsigned char)(input[i] & 0xff);
-        output[j+1] = (unsigned char)((input[i] >> 8) & 0xff);
-        output[j+2] = (unsigned char)((input[i] >> 16) & 0xff);
-        output[j+3] = (unsigned char)((input[i] >> 24) & 0xff);
-    }
-}
-
-/**
  * Decodes input (unsigned char) into output (unsigned int). Assumes len is a multiple of 4.
  */
 void HashUtil::MD5_Decode(unsigned int *output, unsigned char *input, unsigned int len){
@@ -212,16 +200,14 @@ void HashUtil::MD5_memset(unsigned char* output, int value, unsigned int len){
 }
 
 
-unsigned char* HashUtil::getMD5Sum(unsigned char* pData, int size){
+void HashUtil::getMD5Sum(unsigned char* pData, int size, std::array<unsigned char, 16> & Digest ){
     MD5_CTX context;
     
-    unsigned char* pDigest = new unsigned char[16];
-
     MD5Init(&context);
     MD5Update(&context, pData, size);
-    MD5Final(pDigest, &context);
+    MD5Final(Digest, &context);
 
-    return pDigest;    
+    return;
 }
 
 

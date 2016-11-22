@@ -30,6 +30,8 @@
 #ifndef _HASHUTIL_H_
 #define _HASHUTIL_H_
 
+#include <array>
+
 class HashUtil{
 private:
 
@@ -99,16 +101,31 @@ private:
 
     static void MD5Init(MD5_CTX *context);
     static void MD5Update(MD5_CTX *context, unsigned char *input, unsigned int inputLen);
-    static void MD5Final(unsigned char digest[16], MD5_CTX *context);
+    static void MD5Final(std::array<unsigned char, 16> & digest, MD5_CTX *context);
 
     static void MD5Transform(unsigned int state[4], unsigned char block[64]);
-    static void MD5_Encode(unsigned char *, unsigned int *, unsigned int);
+
+    /**
+     * Encodes input (unsigned int) into output (unsigned char). Assumes len is a multiple of 4.
+     */
+
+    template <unsigned int nbits>
+    static void MD5_Encode( std::array<unsigned char, nbits> & output, unsigned int * input )
+    {
+        for(unsigned int i = 0, j = 0; j < nbits; i++, j += 4){
+        output[j] = (unsigned char)(input[i] & 0xff);
+        output[j+1] = (unsigned char)((input[i] >> 8) & 0xff);
+        output[j+2] = (unsigned char)((input[i] >> 16) & 0xff);
+        output[j+3] = (unsigned char)((input[i] >> 24) & 0xff);
+        }
+    };
+
     static void MD5_Decode(unsigned int *, unsigned char *, unsigned int);
     static void MD5_memcpy(unsigned char*, unsigned char*, unsigned int);
     static void MD5_memset(unsigned char*, int, unsigned int);
 
 public:
-    static unsigned char* getMD5Sum(unsigned char* pData, int size);
+    static void getMD5Sum(unsigned char* pData, int size, std::array<unsigned char, 16> & Digest );
 };
 
 #endif
