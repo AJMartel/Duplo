@@ -28,13 +28,6 @@
 #include "SourceLine.h"
 #include "FileType.h"
 
-#ifndef MIN
-#define MIN(x,y) ((x)<(y)?(x):(y))
-#endif
-#ifndef MAX
-#define MAX(x,y) ((x)>(y)?(x):(y))
-#endif
-
 class SourceFile {
 protected:
     std::string m_fileName;

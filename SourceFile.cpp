@@ -51,7 +51,7 @@ SourceFile::SourceFile(const std::string& fileName, const unsigned int minChars,
             FileType::FILETYPE_QML  == m_FileType){
             int lineSize = (int)line.size();
             for(int j=0;j<(int)line.size();j++){
-                if(line[j] == '/' && line[MIN(lineSize-1, j+1)] == '*'){
+                if(line[j] == '/' && line[std::min(lineSize-1, j+1)] == '*'){
                     openBlockComments++;
                 }
 
@@ -59,7 +59,7 @@ SourceFile::SourceFile(const std::string& fileName, const unsigned int minChars,
                     tmp.push_back(line[j]);
                 }
 
-                if(line[MAX(0, j-1)] == '*' && line[j] == '/'){
+                if(line[std::max(0, j-1)] == '*' && line[j] == '/'){
                     openBlockComments--;
                 }
             }
