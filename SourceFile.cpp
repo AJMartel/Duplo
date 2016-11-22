@@ -24,17 +24,17 @@
 
 SourceFile::SourceFile(const std::string& fileName, const unsigned int minChars, const bool ignorePrepStuff) :
     m_fileName(fileName),
-    m_FileType(FileType::GetFileType(fileName)),
-    m_minChars(minChars),    
-    m_ignorePrepStuff(ignorePrepStuff)
+    m_minChars(minChars),
+    m_ignorePrepStuff(ignorePrepStuff),
+    m_FileType(FileType::GetFileType(fileName))
 {
-    TextFile listOfFiles(m_fileName.c_str());
+	TextFile listOfFiles(m_fileName.c_str());
 
     std::vector<std::string> lines;
     listOfFiles.readLines(lines, false);
-    
+	
     int openBlockComments = 0;
-    for(int i=0;i<(int)lines.size();i++){
+	for(int i=0;i<(int)lines.size();i++){
         std::string& line = lines[i];
         std::string tmp;
 
@@ -47,7 +47,8 @@ SourceFile::SourceFile(const std::string& fileName, const unsigned int minChars,
             FileType::FILETYPE_H    == m_FileType ||
             FileType::FILETYPE_HPP  == m_FileType ||
             FileType::FILETYPE_JAVA == m_FileType ||
-            FileType::FILETYPE_CS   == m_FileType ){
+            FileType::FILETYPE_CS   == m_FileType ||
+            FileType::FILETYPE_QML  == m_FileType){
             int lineSize = (int)line.size();
             for(int j=0;j<(int)line.size();j++){
                 if(line[j] == '/' && line[MIN(lineSize-1, j+1)] == '*'){
@@ -67,19 +68,19 @@ SourceFile::SourceFile(const std::string& fileName, const unsigned int minChars,
             tmp = line;
         }
 
-        std::string cleaned;
-        getCleanLine(tmp, cleaned);
-        
-        if(isSourceLine(cleaned)){
-            m_sourceLines.push_back(new SourceLine(cleaned, i));
-        }
-    }
+		std::string cleaned;
+		getCleanLine(tmp, cleaned);
+		
+		if(isSourceLine(cleaned)){
+			m_sourceLines.push_back(new SourceLine(cleaned, i));
+		}
+	}
 }
 
 void SourceFile::getCleanLine(const std::string& line, std::string& cleanedLine){
     // Remove single line comments
     cleanedLine.reserve(line.size());
-    int lineSize = (int)line.size();
+	int lineSize = (int)line.size();
     for(int i=0;i<(int)line.size();i++){
         switch (m_FileType)
         {
@@ -90,6 +91,7 @@ void SourceFile::getCleanLine(const std::string& line, std::string& cleanedLine)
             case FileType::FILETYPE_HPP :
             case FileType::FILETYPE_JAVA:
             case FileType::FILETYPE_CS  :
+            case FileType::FILETYPE_QML :
                 if(i < lineSize-2 && line[i] == '/' && line[i+1] == '/'){
                     return;
                 }
@@ -99,10 +101,6 @@ void SourceFile::getCleanLine(const std::string& line, std::string& cleanedLine)
                 if(i < lineSize-1 && line[i] == '\''){
                     return;
                 }
-                break;
-            
-            // no pre-processing of code of unknown languages
-            case FileType::FILETYPE_UNKNOWN:
                 break;
         }
         cleanedLine.push_back(line[i]);
@@ -121,80 +119,59 @@ bool SourceFile::isSourceLine(const std::string& line){
     std::transform(tmp.begin(), tmp.end(), tmp.begin(), (int(*)(int)) tolower);
 
     if(m_ignorePrepStuff){
-       switch (m_FileType)
-       {
-       case FileType::FILETYPE_C   :
-       case FileType::FILETYPE_CPP :
-       case FileType::FILETYPE_CXX :
-       case FileType::FILETYPE_H   :
-       case FileType::FILETYPE_HPP :
-       case FileType::FILETYPE_JAVA:
-          if(tmp[0] == '#')
-          {
-             return false;
-          }
-          break;
+        switch (m_FileType)
+        {
+            case FileType::FILETYPE_C   :
+            case FileType::FILETYPE_CPP :
+            case FileType::FILETYPE_CXX :
+            case FileType::FILETYPE_H   :
+            case FileType::FILETYPE_HPP :
+            case FileType::FILETYPE_JAVA:
+            case FileType::FILETYPE_QML:
+                if(tmp[0] == '#')
+                {
+                    return false;
+                }
+                break;
 
-       case FileType::FILETYPE_CS  :
-          {
-             if(tmp[0] == '#')
-             {
-                return false;
-             }
-             // look for attribute
-             if(tmp[0] == '[')
-             {
-                return false;
-             }
-             // look for other markers to avoid
-             const std::string PreProc_CS[] = { "using", "private", "protected", "public" };
+            case FileType::FILETYPE_CS  :
+                {
+                if(tmp[0] == '#')
+                {
+                    return false;
+                }
+                // look for preprocessor marker in start of string
+                const std::string PreProc_CS = "using";
 
-             for (int i=0; i<4; i++ ) {
-                if (tmp.find(PreProc_CS[i].c_str(), 0, PreProc_CS[i].length())!=std::string::npos)
-                   return false;
-             }
-          }
-          break;
+                return std::string::npos == tmp.find(PreProc_CS.c_str(), 0, PreProc_CS.length());
+                }
+                break;
 
-       case FileType::FILETYPE_VB  :
-          {
-             // look for preprocessor marker in start of string
-             const std::string PreProc_VB = "imports";
+            case FileType::FILETYPE_VB  :
+                {
+                // look for preprocessor marker in start of string
+                const std::string PreProc_VB = "imports";
 
-             return std::string::npos == tmp.find(PreProc_VB.c_str(), 0, PreProc_VB.length());
-          }
-          break;
-          
-        // no pre-processing of code of unknown languages
-        case FileType::FILETYPE_UNKNOWN:
-            break;
-          
-       }
+                return std::string::npos == tmp.find(PreProc_VB.c_str(), 0, PreProc_VB.length());
+                }
+                break;
+        }
     }
 
     bool bRet = ((int)tmp.size() >= m_minChars);
     assert(bRet);
     
-    // must be at least one alpha-numeric character
-    return bRet && std::find_if(tmp.begin(), tmp.end(), isalpha)!=tmp.end();
+    return bRet;
 }
 
 int SourceFile::getNumOfLines(){
-    return (int)m_sourceLines.size();
+	return (int)m_sourceLines.size();
 }
 
 SourceLine* SourceFile::getLine(const int index){
-    return m_sourceLines[index];
+	return m_sourceLines[index];
 }
 
-const std::string& SourceFile::getFilename() const {
-    return m_fileName;
-}
-
-bool SourceFile::operator==(const SourceFile &other) const {
-    return (this == &other) || (getFilename() == other.getFilename());
-}
-
-bool SourceFile::operator!=(const SourceFile &other) const {
-    return !(*this == other);
+const std::string& SourceFile::getFilename () const {
+	return m_fileName;
 }

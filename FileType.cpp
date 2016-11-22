@@ -9,6 +9,7 @@ static const std::string FileTypeExtn_HPP = "hpp";
 static const std::string FileTypeExtn_Java = "java";
 static const std::string FileTypeExtn_CS = "cs";
 static const std::string FileTypeExtn_VB = "vb";
+static const std::string FileTypeExtn_QML = "qml";
 
 #include <algorithm>
 
@@ -58,6 +59,10 @@ FileType::FILETYPE FileType::GetFileType(const std::string& FileName)
     else if (!FileExtn.compare(FileTypeExtn_VB))
     {
         return FILETYPE_VB;
+    }
+    else if ( !FileExtn.compare(FileTypeExtn_QML) )
+    {
+        return FILETYPE_QML;
     }
 
     return FILETYPE_UNKNOWN;
