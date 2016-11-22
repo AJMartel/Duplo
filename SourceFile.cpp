@@ -24,9 +24,9 @@
 
 SourceFile::SourceFile(const std::string& fileName, const unsigned int minChars, const bool ignorePrepStuff) :
     m_fileName(fileName),
+    m_FileType(FileType::GetFileType(fileName)),
     m_minChars(minChars),
-    m_ignorePrepStuff(ignorePrepStuff),
-    m_FileType(FileType::GetFileType(fileName))
+    m_ignorePrepStuff(ignorePrepStuff)
 {
 	TextFile listOfFiles(m_fileName.c_str());
 
@@ -102,6 +102,8 @@ void SourceFile::getCleanLine(const std::string& line, std::string& cleanedLine)
                     return;
                 }
                 break;
+            default:
+                break;
         }
         cleanedLine.push_back(line[i]);
     }
@@ -155,10 +157,12 @@ bool SourceFile::isSourceLine(const std::string& line){
                 return std::string::npos == tmp.find(PreProc_VB.c_str(), 0, PreProc_VB.length());
                 }
                 break;
+            default:
+                break;
         }
     }
 
-    bool bRet = ((int)tmp.size() >= m_minChars);
+    bool bRet = (tmp.size() >= m_minChars);
     assert(bRet);
     
     return bRet;
