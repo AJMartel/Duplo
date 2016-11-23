@@ -211,7 +211,8 @@ bool Duplo::isSameFilename(const std::string& filename1, const std::string& file
     return (getFilenamePart(filename1) == getFilenamePart(filename2));
 }
 
-void Duplo::run(std::string outputFileName){
+void Duplo::run(std::string outputFileName) {
+
     std::ofstream outfile(outputFileName.c_str(), std::ios::out|std::ios::binary);
 
     if (m_Xml)
@@ -225,7 +226,7 @@ void Duplo::run(std::string outputFileName){
             "\" Ignore_same_filename=\"" << (m_ignoreSameFilename ? "true" : "false") << "\">" << std::endl;
     }
 
-    if(!outfile.is_open()){
+    if(!outfile.is_open()) {
         std::cout << "Error: Can't open file: " << outputFileName << std::endl;
         return;
     }
@@ -238,7 +239,7 @@ void Duplo::run(std::string outputFileName){
     std::cout << "Loading and hashing files ... ";
     std::cout.flush();
 
-    std::vector<std::unique_ptr<SourceFile>> sourceFiles;
+    std::vector<SourceFile> sourceFiles;
     
     TextFile listOfFiles(m_listFileName.c_str());
     std::vector<std::string> lines;
@@ -251,18 +252,18 @@ void Duplo::run(std::string outputFileName){
     int max_lines_of_file = 50000;
 
     // Create vector with all source files
-    //for(int i=0;i<(int)lines.size();i++){
     for( auto & line: lines ) {
 
         if(line.size() > 5){
 
-            auto pSourceFile = std::make_unique<SourceFile>( line, m_minChars, m_ignorePrepStuff );
-            int numLines = pSourceFile->getNumOfLinesOfFile();
+            //auto pSourceFile = std::make_unique<SourceFile>( line, m_minChars, m_ignorePrepStuff );
+            SourceFile sf( line, m_minChars, m_ignorePrepStuff );
+            int numLines = sf.getNumOfLinesOfFile();
 
             if(numLines > 0 && numLines < max_lines_of_file) {
 
                 files++;
-                sourceFiles.push_back(std::move( pSourceFile) );
+                sourceFiles.push_back( std::move( sf ) );
                 locsTotal+=numLines;
                 if(m_maxLinesPerFile < numLines){
 
@@ -287,13 +288,13 @@ void Duplo::run(std::string outputFileName){
     // Compare each file with each other
     for(int i=0;i<(int)sourceFiles.size();i++){
 
-        std::cout << sourceFiles[i]->getFilename();
+        std::cout << sourceFiles[i].getFilename();
         int blocks = 0;
         
-        blocks+=process(sourceFiles[i].get( ), sourceFiles[i].get( ), outfile);
+        blocks+=process(&sourceFiles[i], &sourceFiles[i], outfile);
         for(int j=i+1;j<(int)sourceFiles.size();j++){
-            if ((m_ignoreSameFilename && isSameFilename(sourceFiles[i]->getFilename(), sourceFiles[j]->getFilename()))==false){
-                blocks+=process(sourceFiles[i].get( ), sourceFiles[j].get( ), outfile);
+            if ((m_ignoreSameFilename && isSameFilename(sourceFiles[i].getFilename(), sourceFiles[j].getFilename()))==false){
+                blocks+=process(&sourceFiles[i], &sourceFiles[j], outfile);
             }
         }
 
