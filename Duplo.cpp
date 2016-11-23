@@ -239,11 +239,13 @@ void Duplo::run(std::string outputFileName) {
     std::cout << "Loading and hashing files ... ";
     std::cout.flush();
 
-    std::vector<SourceFile> sourceFiles;
     
     TextFile listOfFiles(m_listFileName.c_str());
     std::vector<std::string> lines;
     listOfFiles.readLines(lines, true);
+    
+    std::vector<SourceFile> sourceFiles;
+    sourceFiles.reserve( lines.size( ) );
     
     int files = 0;
     int locsTotal = 0;
