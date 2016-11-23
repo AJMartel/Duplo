@@ -25,8 +25,9 @@
 #include <string>
 #include <vector>
 
-#include "SourceLine.h"
 #include "FileType.h"
+
+class SourceLine;
 
 class SourceFile {
 protected:
@@ -58,7 +59,7 @@ public:
      * @return number of lines the file has.
      */
     int getNumOfLinesOfFile( );
-    SourceLine* getLine(const int index) const;
+    const SourceLine& getLine(const int index) const;
     const std::string& getFilename() const;
 
     static void setMinChars( unsigned int a_min_chars );

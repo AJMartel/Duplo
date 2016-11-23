@@ -36,9 +36,9 @@ public:
     long long m_hashHigh;
     long long m_hashLow;
     
-    int getLineNumber();
-    std::string& getLine();
-    bool equals(SourceLine* pLine);
+    int getLineNumber() const;
+    const std::string& getLine() const;
+    bool equals( const SourceLine& pLine) const;
 };
 
 #endif

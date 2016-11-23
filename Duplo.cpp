@@ -66,13 +66,13 @@ void Duplo::reportSeq(int line1,
     if (m_Xml)
     {
         outFile << "    <set LineCount=\"" << count << "\">" << std::endl;
-        outFile << "        <block SourceFile=\"" << pSource1.getFilename() << "\" StartLineNumber=\"" << pSource1.getLine(line1)->getLineNumber() << "\"/>" << std::endl;
-        outFile << "        <block SourceFile=\"" << pSource2.getFilename() << "\" StartLineNumber=\"" << pSource2.getLine(line2)->getLineNumber() << "\"/>" << std::endl;
+        outFile << "        <block SourceFile=\"" << pSource1.getFilename() << "\" StartLineNumber=\"" << pSource1.getLine(line1).getLineNumber() << "\"/>" << std::endl;
+        outFile << "        <block SourceFile=\"" << pSource2.getFilename() << "\" StartLineNumber=\"" << pSource2.getLine(line2).getLineNumber() << "\"/>" << std::endl;
         outFile << "        <lines xml:space=\"preserve\">" << std::endl;
         for(int j = 0; j < count; j++)
         {
             // replace various characters/ strings so that it doesn't upset the XML parser
-            std::string tmpstr = pSource1.getLine(j+line1)->getLine();
+            std::string tmpstr = pSource1.getLine(j+line1).getLine();
 
             // " --> '
             StringUtil::StrSub(tmpstr, "\'", "\"", -1);
@@ -94,10 +94,10 @@ void Duplo::reportSeq(int line1,
     }
     else
     {
-        outFile << pSource1.getFilename() << "(" << pSource1.getLine(line1)->getLineNumber() << ")" << std::endl;
-        outFile << pSource2.getFilename() << "(" << pSource2.getLine(line2)->getLineNumber() << ")" << std::endl;
+        outFile << pSource1.getFilename() << "(" << pSource1.getLine(line1).getLineNumber() << ")" << std::endl;
+        outFile << pSource2.getFilename() << "(" << pSource2.getLine(line2).getLineNumber() << ")" << std::endl;
         for(int j=0;j<count;j++){
-            outFile << pSource1.getLine(j+line1)->getLine() << std::endl;
+            outFile << pSource1.getLine(j+line1).getLine() << std::endl;
             m_DuplicateLines++;
         }
         outFile << std::endl;
@@ -122,10 +122,10 @@ int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::
 
     // Compute matrix
     for(unsigned int y=0; y<m; y++){
-        SourceLine* pSLine = pSource1.getLine(y);
+        auto pSLine = pSource1.getLine(y);
         for(unsigned int x=0; x<n; x++){
 
-            if( pSLine->equals( pSource2.getLine( x ) ) ) {
+            if( pSLine.equals( pSource2.getLine( x ) ) ) {
                 m_pMatrix[x+n*y] = MATCH;
             }
         }

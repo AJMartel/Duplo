@@ -16,6 +16,7 @@
 
 #include "SourceFile.h"
 
+#include "SourceLine.h"
 #include "TextFile.h"
 #include "StringUtil.h"
 
@@ -91,6 +92,7 @@ void SourceFile::AddToLines( const std::string & tmp ,int index )
     getCleanLine(tmp, cleaned);
     
     if(isSourceLine(cleaned)){
+
         m_sourceLines.push_back(new SourceLine(cleaned, index));
     }
 }
@@ -200,10 +202,10 @@ int SourceFile::getNumOfLinesOfCode() const
 	return static_cast<int>( m_sourceLines.size() );
 }
 
-SourceLine* SourceFile::getLine(const int index) const
+const SourceLine& SourceFile::getLine(const int index) const
 {
 
-	return m_sourceLines[index];
+	return *m_sourceLines[index];
 }
 
 const std::string& SourceFile::getFilename () const {
