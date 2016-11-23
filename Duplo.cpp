@@ -253,13 +253,17 @@ void Duplo::run(std::string outputFileName) {
     //I add a max number of lines, because for some files it crashed
     int max_lines_of_file = 50000;
 
+    //Set values for processing of files.
+    SourceFile::setMinChars( m_minChars );
+    SourceFile::setIgnorePreprocessor( m_ignorePrepStuff );
+
     // Create vector with all source files
     for( auto & line: lines ) {
 
         if(line.size() > 5){
 
             //auto pSourceFile = std::make_unique<SourceFile>( line, m_minChars, m_ignorePrepStuff );
-            SourceFile sf( line, m_minChars, m_ignorePrepStuff );
+            SourceFile sf( line );
             int numLines = sf.getNumOfLinesOfFile();
 
             if(numLines > 0 && numLines < max_lines_of_file) {
@@ -281,7 +285,8 @@ void Duplo::run(std::string outputFileName) {
 
     // Generate matrix large enough for all files
     matrix_size = m_maxLinesPerFile * m_maxLinesPerFile;
-    m_pMatrix.reset( new unsigned char [ matrix_size ] );
+    m_pMatrix = std::make_unique< unsigned char [ ] >( matrix_size );
+    //m_pMatrix.reset( new unsigned char [ matrix_size ] );
     //cout << "max lines per file = " << m_maxLinesPerFile;
 
 

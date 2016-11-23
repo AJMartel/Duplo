@@ -33,8 +33,8 @@ protected:
     std::string m_fileName;
     FileType::FILETYPE m_FileType;
 
-    unsigned int m_minChars;
-    bool m_ignorePrepStuff;
+    static unsigned int m_minChars;
+    static bool m_ignorePrepStuff;
 
     std::vector<SourceLine*> m_sourceLines;
 
@@ -44,7 +44,7 @@ protected:
 	void getCleanLine(const std::string& line, std::string& cleanedLine);
 
 public:
-    SourceFile(const std::string& fileName, const unsigned int minChars, const bool ignorePrepStuff);
+    SourceFile(const std::string& fileName );
     
     /**
      * @brief Get number of lines that are actual code
@@ -60,6 +60,10 @@ public:
     int getNumOfLinesOfFile( );
     SourceLine* getLine(const int index);
     const std::string& getFilename() const;
+
+    static void setMinChars( unsigned int a_min_chars );
+    static void setIgnorePreprocessor( bool a_ignore );
+
 private:
 
     void AddToLines( const std::string & tmp , int index );

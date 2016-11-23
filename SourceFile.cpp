@@ -22,11 +22,13 @@
 #include <algorithm>
 #include <assert.h>
 
-SourceFile::SourceFile(const std::string& fileName, const unsigned int minChars, const bool ignorePrepStuff) :
+
+unsigned int SourceFile::m_minChars = 3;
+bool SourceFile::m_ignorePrepStuff = false;
+
+SourceFile::SourceFile(const std::string& fileName ) :
     m_fileName(fileName),
-    m_FileType(FileType::GetFileType(fileName)),
-    m_minChars(minChars),
-    m_ignorePrepStuff(ignorePrepStuff)
+    m_FileType(FileType::GetFileType(fileName))
 {
 	TextFile listOfFiles(m_fileName.c_str());
 
@@ -56,7 +58,9 @@ SourceFile::SourceFile(const std::string& fileName, const unsigned int minChars,
 
             for( int j=0 ; j< lineSize ; j++ ) {
 
-                if( j< ( lineSize -1 ) && line.substr( j, 2 ) == "/*" ) {
+                //if(line[j] == '/' && line[std::min(lineSize-1, j+1)] == '*'){
+                if( j < ( lineSize - 1 ) && line.substr( j, 2 ) == "/*" ) {
+                //if( j< ( lineSize -1 ) && line.substr( j, 2 ) == "/*" ) {
 
                     openBlockComments++;
                 }
@@ -66,7 +70,9 @@ SourceFile::SourceFile(const std::string& fileName, const unsigned int minChars,
                     tmp.push_back(line[j]);
                 }
 
-                if( j < ( lineSize - 1 ) && line.substr( j, 2 ) == "*/" ) {
+                //if(line[std::max(0, j-1)] == '*' && line[j] == '/'){
+                //if( j < ( lineSize - 1 ) && line.substr( j, 2 ) == "*/" ) {
+                if( j > 0 && j < ( lineSize ) && line.substr( j - 1, 2 ) == "*/" ) {
 
                     openBlockComments--;
                 }
@@ -206,4 +212,13 @@ const std::string& SourceFile::getFilename () const {
 int SourceFile::getNumOfLinesOfFile( )
 {
     return m_linesOfFile;
+}
+    
+void SourceFile::setMinChars( unsigned int a_min_chars )
+{
+    m_minChars = a_min_chars;
+}
+void SourceFile::setIgnorePreprocessor( bool a_ignore )
+{
+    m_ignorePrepStuff = a_ignore;
 }
