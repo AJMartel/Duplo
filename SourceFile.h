@@ -38,15 +38,32 @@ protected:
 
     std::vector<SourceLine*> m_sourceLines;
 
+    int m_linesOfFile = 0;
+
 	bool isSourceLine(const std::string& line);
 	void getCleanLine(const std::string& line, std::string& cleanedLine);
 
 public:
     SourceFile(const std::string& fileName, const unsigned int minChars, const bool ignorePrepStuff);
     
-    int getNumOfLines();
+    /**
+     * @brief Get number of lines that are actual code
+     *
+     * @return number of lines of code
+     */
+    int getNumOfLinesOfCode();
+    /**
+     * @brief Get number of lines the file has
+     *
+     * @return number of lines the file has.
+     */
+    int getNumOfLinesOfFile( );
     SourceLine* getLine(const int index);
     const std::string& getFilename() const;
+private:
+
+    void AddToLines( const std::string & tmp , int index );
+    void RemoveBlockComments( const std::string & line , int & openBlockComments );
 };
 
 #endif
