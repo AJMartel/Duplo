@@ -26,7 +26,6 @@
 #include <string>
 
 class StringUtil{
-private:
 
 public:
     static std::string trim(const std::string& input);

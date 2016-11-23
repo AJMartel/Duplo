@@ -17,6 +17,7 @@
 #include "StringUtil.h"
 
 #include <ctype.h>
+#include <sstream>
 
 /**
  * Trim string
@@ -25,10 +26,14 @@
  * @return returns trimmed string
  */
 std::string StringUtil::trim(const std::string& input){
+
+    /*
     // If string is empty, there is nothing to look for.
     if(input.length()==0){
+
         return "";
     }
+
 
     // Set up temporary
     std::string final=input;
@@ -55,9 +60,16 @@ std::string StringUtil::trim(const std::string& input){
     }
 
     final = final.substr(0, i+1);
+    */
+    auto str = input;
+
+    std::stringstream trimmer;
+    trimmer << str;
+    str.clear();
+    trimmer >> str;
 
     // Return the new string
-    return final;
+    return str;
 }
 
 /**
