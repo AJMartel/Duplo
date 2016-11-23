@@ -32,13 +32,17 @@ SourceFile::SourceFile(const std::string& fileName, const unsigned int minChars,
 
     std::vector<std::string> lines;
     listOfFiles.readLines(lines, false);
+
+    //Get lines that the file has.
+    m_linesOfFile = lines.size( );
 	
     int openBlockComments = 0;
-	for(int i=0;i<(int)lines.size();i++){
-        std::string& line = lines[i];
+    int index = 0;
+    for( auto & line : lines ){
+        
+        int lineSize = static_cast<int>(line.size() );
         std::string tmp;
-
-        tmp.reserve(line.size());
+        tmp.reserve( lineSize );
 
         // Remove block comments
         if (FileType::FILETYPE_C    == m_FileType ||
@@ -49,39 +53,54 @@ SourceFile::SourceFile(const std::string& fileName, const unsigned int minChars,
             FileType::FILETYPE_JAVA == m_FileType ||
             FileType::FILETYPE_CS   == m_FileType ||
             FileType::FILETYPE_QML  == m_FileType){
-            int lineSize = (int)line.size();
-            for(int j=0;j<(int)line.size();j++){
-                if(line[j] == '/' && line[std::min(lineSize-1, j+1)] == '*'){
+
+            for( int j=0 ; j< lineSize ; j++ ) {
+
+                if( j< ( lineSize -1 ) && line.substr( j, 2 ) == "/*" ) {
+
                     openBlockComments++;
                 }
 
-                if(openBlockComments <= 0){
+                if(openBlockComments <= 0) {
+
                     tmp.push_back(line[j]);
                 }
 
-                if(line[std::max(0, j-1)] == '*' && line[j] == '/'){
+                if( j < ( lineSize - 1 ) && line.substr( j, 2 ) == "*/" ) {
+
                     openBlockComments--;
                 }
             }
         }
         if (FileType::FILETYPE_VB == m_FileType) {
+
             tmp = line;
         }
 
-		std::string cleaned;
-		getCleanLine(tmp, cleaned);
-		
-		if(isSourceLine(cleaned)){
-			m_sourceLines.push_back(new SourceLine(cleaned, i));
-		}
+        AddToLines( tmp , index );
+
+        index++;
 	}
+}
+
+void SourceFile::AddToLines( const std::string & tmp ,int index )
+{
+    std::string cleaned;
+    getCleanLine(tmp, cleaned);
+    
+    if(isSourceLine(cleaned)){
+        m_sourceLines.push_back(new SourceLine(cleaned, index));
+    }
 }
 
 void SourceFile::getCleanLine(const std::string& line, std::string& cleanedLine){
     // Remove single line comments
-    cleanedLine.reserve(line.size());
 	int lineSize = (int)line.size();
-    for(int i=0;i<(int)line.size();i++){
+
+    cleanedLine.reserve( lineSize );
+
+    for( int i=0;i< lineSize; i++ ) {
+
         switch (m_FileType)
         {
             case FileType::FILETYPE_C   :
@@ -92,7 +111,8 @@ void SourceFile::getCleanLine(const std::string& line, std::string& cleanedLine)
             case FileType::FILETYPE_JAVA:
             case FileType::FILETYPE_CS  :
             case FileType::FILETYPE_QML :
-                if(i < lineSize-2 && line[i] == '/' && line[i+1] == '/'){
+                if( ( i < lineSize -1 ) && line.substr( i, 2 ) == "//" ) {
+                //if(i < lineSize-1 && line[i] == '/' && line[i+1] == '/'){
                     return;
                 }
                 break;
@@ -118,7 +138,7 @@ bool SourceFile::isSourceLine(const std::string& line){
         return false;
     }
 
-    std::transform(tmp.begin(), tmp.end(), tmp.begin(), (int(*)(int)) tolower);
+    std::transform(tmp.begin(), tmp.end(), tmp.begin(), tolower);
 
     if(m_ignorePrepStuff){
         switch (m_FileType)
@@ -171,7 +191,7 @@ bool SourceFile::isSourceLine(const std::string& line){
     return bRet && std::find_if(tmp.begin(), tmp.end(), isalpha)!=tmp.end();
 }
 
-int SourceFile::getNumOfLines(){
+int SourceFile::getNumOfLinesOfCode(){
 	return (int)m_sourceLines.size();
 }
 
@@ -181,4 +201,9 @@ SourceLine* SourceFile::getLine(const int index){
 
 const std::string& SourceFile::getFilename () const {
 	return m_fileName;
+}
+
+int SourceFile::getNumOfLinesOfFile( )
+{
+    return m_linesOfFile;
 }
