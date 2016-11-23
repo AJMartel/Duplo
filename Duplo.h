@@ -22,8 +22,9 @@
 #ifndef _DUPLO_H_
 #define _DUPLO_H_
 
-#include <string>
 #include <iostream>
+#include <memory>
+#include <string>
 
 class SourceFile;
 
@@ -40,7 +41,8 @@ protected:
     int m_maxLinesPerFile;
     int m_DuplicateLines;
     bool m_Xml;
-    unsigned char* m_pMatrix;
+    std::unique_ptr< unsigned char [ ] > m_pMatrix;
+    long long matrix_size = 0;
 
     void reportSeq(int line1, int line2, int count, SourceFile* pSource1, SourceFile* pSource2, std::ostream& outFile);
     int process(SourceFile* pSource1, SourceFile* pSource2, std::ostream& outFile);

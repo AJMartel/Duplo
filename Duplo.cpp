@@ -20,7 +20,9 @@
 #include <time.h>
 
 #include <algorithm>
+#include <cassert>
 #include <cstring>
+#include <iostream>
 
 #include "SourceFile.h"
 #include "SourceLine.h"
@@ -29,6 +31,9 @@
 #include "HashUtil.h"
 #include "TextFile.h"
 #include "ArgumentParser.h"
+
+using std::cout;
+using std::endl;
 
 Duplo::Duplo(
     const std::string& listFileName, 
@@ -45,13 +50,11 @@ Duplo::Duplo(
     m_maxLinesPerFile(0),
     m_DuplicateLines(0),
     m_Xml(Xml),
-    m_pMatrix(NULL)
+    m_pMatrix()
 {
 }
 
 Duplo::~Duplo(){
-    delete[] m_pMatrix;
-    m_pMatrix = NULL;
 }
 
 void Duplo::reportSeq(int line1, int line2, int count, SourceFile* pSource1, SourceFile* pSource2, std::ostream& outFile){
@@ -97,14 +100,19 @@ void Duplo::reportSeq(int line1, int line2, int count, SourceFile* pSource1, Sou
 }
 
 int Duplo::process(SourceFile* pSource1, SourceFile* pSource2, std::ostream& outFile){
-    const unsigned int m = pSource1->getNumOfLines();
-    const unsigned int n = pSource2->getNumOfLines();
+    const unsigned int m = pSource1->getNumOfLinesOfCode();
+    const unsigned int n = pSource2->getNumOfLinesOfCode();
+
 
     const unsigned char NONE = 0;
     const unsigned char MATCH = 1;
 
+    //cout << endl << "m = " << m << " " << "n = " << n << " max_size = " << matrix_size << " max_line_length = " << m_maxLinesPerFile;
+    long long index = m * n;
+    assert( ( index ) < matrix_size );
+
     // Reset matrix data
-    memset(m_pMatrix, NONE, m*n);
+    memset(m_pMatrix.get( ), NONE, m*n);
 
     // Compute matrix
     for(unsigned int y=0; y<m; y++){
@@ -230,7 +238,7 @@ void Duplo::run(std::string outputFileName){
     std::cout << "Loading and hashing files ... ";
     std::cout.flush();
 
-    std::vector<SourceFile*> sourceFiles;
+    std::vector<std::unique_ptr<SourceFile>> sourceFiles;
     
     TextFile listOfFiles(m_listFileName.c_str());
     std::vector<std::string> lines;
@@ -239,39 +247,53 @@ void Duplo::run(std::string outputFileName){
     int files = 0;
     int locsTotal = 0;
 
+    //I add a max number of lines, because for some files it crashed
+    int max_lines_of_file = 50000;
+
     // Create vector with all source files
-    for(int i=0;i<(int)lines.size();i++){
-        if(lines[i].size() > 5){
-            SourceFile* pSourceFile = new SourceFile(lines[i], m_minChars, m_ignorePrepStuff);
-            int numLines = pSourceFile->getNumOfLines();
-            if(numLines > 0){
+    //for(int i=0;i<(int)lines.size();i++){
+    for( auto & line: lines ) {
+
+        if(line.size() > 5){
+
+            auto pSourceFile = std::make_unique<SourceFile>( line, m_minChars, m_ignorePrepStuff );
+            int numLines = pSourceFile->getNumOfLinesOfFile();
+
+            if(numLines > 0 && numLines < max_lines_of_file) {
+
                 files++;
-                sourceFiles.push_back(pSourceFile);
+                sourceFiles.push_back(std::move( pSourceFile) );
                 locsTotal+=numLines;
                 if(m_maxLinesPerFile < numLines){
+
+                    //cout << endl << "max lines = " << numLines << "file = " << line;
                     m_maxLinesPerFile = numLines;
                 }
             }
+            
         }
     }
 
     std::cout << "done.\n\n";
 
     // Generate matrix large enough for all files
-    m_pMatrix = new unsigned char[m_maxLinesPerFile*m_maxLinesPerFile];
+    matrix_size = m_maxLinesPerFile * m_maxLinesPerFile;
+    m_pMatrix.reset( new unsigned char [ matrix_size ] );
+    //cout << "max lines per file = " << m_maxLinesPerFile;
 
 
     int blocksTotal = 0;
 
     // Compare each file with each other
     for(int i=0;i<(int)sourceFiles.size();i++){
+
         std::cout << sourceFiles[i]->getFilename();
         int blocks = 0;
         
-        blocks+=process(sourceFiles[i], sourceFiles[i], outfile);
+        blocks+=process(sourceFiles[i].get( ), sourceFiles[i].get( ), outfile);
         for(int j=i+1;j<(int)sourceFiles.size();j++){
             if ((m_ignoreSameFilename && isSameFilename(sourceFiles[i]->getFilename(), sourceFiles[j]->getFilename()))==false){
-                blocks+=process(sourceFiles[i], sourceFiles[j], outfile);
+                blocks+=process(sourceFiles[i].get( ), sourceFiles[j].get( ), outfile);
             }
         }
 
