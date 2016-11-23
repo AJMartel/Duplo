@@ -318,6 +318,7 @@ void Duplo::run(std::string outputFileName) {
         for(int j=i+1;j<(int)sourceFiles.size();j++){
 
             if ( ( m_ignoreSameFilename && isSameFilename( sourceFiles[ i ].getFilename(), sourceFiles[j].getFilename() ) ) == false ) {
+
                 blocks+=process( sourceFiles[ i ], sourceFiles[ j ], outfile );
             }
         }
@@ -375,11 +376,14 @@ int Clamp (int upper, int lower, int value)
  * @param argc  number of arguments
  * @param argv  arguments
  */
+const int MIN_BLOCK_SIZE = 4;
+const int MIN_CHARS = 3;
+
+void DisplayHelp( );
+
 int main(int argc, const char* argv[]){
     ArgumentParser ap(argc, argv);
 
-    const int MIN_BLOCK_SIZE = 4;
-    const int MIN_CHARS = 3;
 
     if(!ap.is("--help") && argc > 2){
         Duplo duplo(
@@ -391,36 +395,41 @@ int main(int argc, const char* argv[]){
         );
         duplo.run(argv[argc-1]);
     } else {
-        std::cout << "\nNAME\n";
-        std::cout << "       Duplo " << VERSION << " - duplicate source code block finder\n\n";
-
-        std::cout << "\nSYNOPSIS\n";
-        std::cout << "       duplo [OPTIONS] [INTPUT_FILELIST] [OUTPUT_FILE]\n";
-
-        std::cout << "\nDESCRIPTION\n";
-        std::cout << "       Duplo is a tool to find duplicated code blocks in large\n";
-        std::cout << "       C/C++/Java/C#/VB.Net software systems.\n\n";
-
-        std::cout << "       -ml              minimal block size in lines (default is " << MIN_BLOCK_SIZE << ")\n";
-        std::cout << "       -pt              percentage of lines of duplication threshold to override -ml\n";
-        std::cout << "                        (default is 100%)\n";
-        std::cout << "                        useful for identifying whole file class duplication\n";
-        std::cout << "       -mc              minimal characters in line (default is " << MIN_CHARS << ")\n";
-        std::cout << "                        lines with less characters are ignored\n";
-        std::cout << "       -ip              ignore preprocessor directives\n";
-        std::cout << "       -d               ignore file pairs with same name\n";
-        std::cout << "       -xml             output file in XML\n";
-        std::cout << "       INTPUT_FILELIST  input filelist\n";
-        std::cout << "       OUTPUT_FILE      output file\n";
-
-        std::cout << "\nVERSION\n";
-        std::cout << "       " << VERSION << "\n";
-
-        std::cout << "\nAUTHORS\n";
-        std::cout << "       Christian M. Ammann (cammann@giants.ch)\n";    
-        std::cout << "       Trevor D'Arcy-Evans (tdarcyevans@hotmail.com)\n\n";    
+        DisplayHelp( );
     }
 
     return 0;
+}
+
+void DisplayHelp( )
+{
+    std::cout << "\nNAME\n";
+    std::cout << "       Duplo " << VERSION << " - duplicate source code block finder\n\n";
+
+    std::cout << "\nSYNOPSIS\n";
+    std::cout << "       duplo [OPTIONS] [INTPUT_FILELIST] [OUTPUT_FILE]\n";
+
+    std::cout << "\nDESCRIPTION\n";
+    std::cout << "       Duplo is a tool to find duplicated code blocks in large\n";
+    std::cout << "       C/C++/Java/C#/VB.Net software systems.\n\n";
+
+    std::cout << "       -ml              minimal block size in lines (default is " << MIN_BLOCK_SIZE << ")\n";
+    std::cout << "       -pt              percentage of lines of duplication threshold to override -ml\n";
+    std::cout << "                        (default is 100%)\n";
+    std::cout << "                        useful for identifying whole file class duplication\n";
+    std::cout << "       -mc              minimal characters in line (default is " << MIN_CHARS << ")\n";
+    std::cout << "                        lines with less characters are ignored\n";
+    std::cout << "       -ip              ignore preprocessor directives\n";
+    std::cout << "       -d               ignore file pairs with same name\n";
+    std::cout << "       -xml             output file in XML\n";
+    std::cout << "       INTPUT_FILELIST  input filelist\n";
+    std::cout << "       OUTPUT_FILE      output file\n";
+
+    std::cout << "\nVERSION\n";
+    std::cout << "       " << VERSION << "\n";
+
+    std::cout << "\nAUTHORS\n";
+    std::cout << "       Christian M. Ammann (cammann@giants.ch)\n";    
+    std::cout << "       Trevor D'Arcy-Evans (tdarcyevans@hotmail.com)\n\n";    
 }
 
