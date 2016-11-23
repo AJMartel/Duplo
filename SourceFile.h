@@ -51,14 +51,14 @@ public:
      *
      * @return number of lines of code
      */
-    int getNumOfLinesOfCode();
+    int getNumOfLinesOfCode() const;
     /**
      * @brief Get number of lines the file has
      *
      * @return number of lines the file has.
      */
     int getNumOfLinesOfFile( );
-    SourceLine* getLine(const int index);
+    SourceLine* getLine(const int index) const;
     const std::string& getFilename() const;
 
     static void setMinChars( unsigned int a_min_chars );

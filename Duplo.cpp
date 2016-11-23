@@ -57,17 +57,22 @@ Duplo::Duplo(
 Duplo::~Duplo(){
 }
 
-void Duplo::reportSeq(int line1, int line2, int count, SourceFile* pSource1, SourceFile* pSource2, std::ostream& outFile){
+void Duplo::reportSeq(int line1, 
+                      int line2, 
+                      int count, 
+                      const SourceFile& pSource1, 
+                      const SourceFile& pSource2, 
+                      std::ostream& outFile){
     if (m_Xml)
     {
         outFile << "    <set LineCount=\"" << count << "\">" << std::endl;
-        outFile << "        <block SourceFile=\"" << pSource1->getFilename() << "\" StartLineNumber=\"" << pSource1->getLine(line1)->getLineNumber() << "\"/>" << std::endl;
-        outFile << "        <block SourceFile=\"" << pSource2->getFilename() << "\" StartLineNumber=\"" << pSource2->getLine(line2)->getLineNumber() << "\"/>" << std::endl;
+        outFile << "        <block SourceFile=\"" << pSource1.getFilename() << "\" StartLineNumber=\"" << pSource1.getLine(line1)->getLineNumber() << "\"/>" << std::endl;
+        outFile << "        <block SourceFile=\"" << pSource2.getFilename() << "\" StartLineNumber=\"" << pSource2.getLine(line2)->getLineNumber() << "\"/>" << std::endl;
         outFile << "        <lines xml:space=\"preserve\">" << std::endl;
         for(int j = 0; j < count; j++)
         {
             // replace various characters/ strings so that it doesn't upset the XML parser
-            std::string tmpstr = pSource1->getLine(j+line1)->getLine();
+            std::string tmpstr = pSource1.getLine(j+line1)->getLine();
 
             // " --> '
             StringUtil::StrSub(tmpstr, "\'", "\"", -1);
@@ -89,25 +94,26 @@ void Duplo::reportSeq(int line1, int line2, int count, SourceFile* pSource1, Sou
     }
     else
     {
-        outFile << pSource1->getFilename() << "(" << pSource1->getLine(line1)->getLineNumber() << ")" << std::endl;
-        outFile << pSource2->getFilename() << "(" << pSource2->getLine(line2)->getLineNumber() << ")" << std::endl;
+        outFile << pSource1.getFilename() << "(" << pSource1.getLine(line1)->getLineNumber() << ")" << std::endl;
+        outFile << pSource2.getFilename() << "(" << pSource2.getLine(line2)->getLineNumber() << ")" << std::endl;
         for(int j=0;j<count;j++){
-            outFile << pSource1->getLine(j+line1)->getLine() << std::endl;
+            outFile << pSource1.getLine(j+line1)->getLine() << std::endl;
             m_DuplicateLines++;
         }
         outFile << std::endl;
     }
 }
 
-int Duplo::process(SourceFile* pSource1, SourceFile* pSource2, std::ostream& outFile){
-    const unsigned int m = pSource1->getNumOfLinesOfCode();
-    const unsigned int n = pSource2->getNumOfLinesOfCode();
+int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::ostream& outFile) 
+{
+
+    const unsigned int m = pSource1.getNumOfLinesOfCode();
+    const unsigned int n = pSource2.getNumOfLinesOfCode();
 
 
     const unsigned char NONE = 0;
     const unsigned char MATCH = 1;
 
-    //cout << endl << "m = " << m << " " << "n = " << n << " max_size = " << matrix_size << " max_line_length = " << m_maxLinesPerFile;
     long long index = m * n;
     assert( ( index ) < matrix_size );
 
@@ -116,9 +122,10 @@ int Duplo::process(SourceFile* pSource1, SourceFile* pSource2, std::ostream& out
 
     // Compute matrix
     for(unsigned int y=0; y<m; y++){
-        SourceLine* pSLine = pSource1->getLine(y);
+        SourceLine* pSLine = pSource1.getLine(y);
         for(unsigned int x=0; x<n; x++){
-            if(pSLine->equals(pSource2->getLine(x))){
+
+            if( pSLine->equals( pSource2.getLine( x ) ) ) {
                 m_pMatrix[x+n*y] = MATCH;
             }
         }
@@ -138,16 +145,25 @@ int Duplo::process(SourceFile* pSource1, SourceFile* pSource2, std::ostream& out
 
     // Scan vertical part
     for(unsigned int y=0; y<m; y++){
+
         unsigned int seqLen=0;
         int maxX = std::min(n, m-y);
         for(int x=0; x<maxX; x++){
+
             if(m_pMatrix[x+n*(y+x)] == MATCH){
+
+
                 seqLen++;
             } else {
+
                 if(seqLen >= lMinBlockSize){
+
                     int line1 = y+x-seqLen;
+
                     int line2 = x-seqLen;
-                    if (!((line1 == line2) && (pSource1 == pSource2))) {
+
+                    if (!((line1 == line2) && (pSource1.getFilename( ) == pSource2.getFilename( ) ) ) ) {
+
                         reportSeq(line1, line2, seqLen, pSource1, pSource2, outFile);
                         blocks++;
                     }
@@ -159,14 +175,14 @@ int Duplo::process(SourceFile* pSource1, SourceFile* pSource2, std::ostream& out
         if(seqLen >= lMinBlockSize){
             int line1 = m-seqLen;
             int line2 = n-seqLen;
-            if (!((line1 == line2) && (pSource1 == pSource2))) {
+            if (!((line1 == line2) && (pSource1.getFilename( ) == pSource2.getFilename( ) ) ) ) {
                 reportSeq(line1, line2, seqLen, pSource1, pSource2, outFile);
                 blocks++;
             }
         }
     }
 
-    if (pSource1 != pSource2)
+    if (pSource1.getFilename( ) != pSource2.getFilename( ) )
     {
         // Scan horizontal part
         for(unsigned int x=1; x<n; x++){
@@ -262,7 +278,6 @@ void Duplo::run(std::string outputFileName) {
 
         if(line.size() > 5){
 
-            //auto pSourceFile = std::make_unique<SourceFile>( line, m_minChars, m_ignorePrepStuff );
             SourceFile sf( line );
             int numLines = sf.getNumOfLinesOfFile();
 
@@ -271,23 +286,24 @@ void Duplo::run(std::string outputFileName) {
                 files++;
                 sourceFiles.push_back( std::move( sf ) );
                 locsTotal+=numLines;
-                if(m_maxLinesPerFile < numLines){
 
-                    //cout << endl << "max lines = " << numLines << "file = " << line;
-                    m_maxLinesPerFile = numLines;
-                }
             }
             
         }
     }
+
+    auto it= std::max_element( sourceFiles.begin( ), sourceFiles.end( ), [ ] ( SourceFile & sf1, SourceFile & sf2 ) -> bool
+            {
+              return sf1.getNumOfLinesOfFile( ) < sf2.getNumOfLinesOfFile( );
+            });
+
+    m_maxLinesPerFile = it->getNumOfLinesOfFile( );
 
     std::cout << "done.\n\n";
 
     // Generate matrix large enough for all files
     matrix_size = m_maxLinesPerFile * m_maxLinesPerFile;
     m_pMatrix = std::make_unique< unsigned char [ ] >( matrix_size );
-    //m_pMatrix.reset( new unsigned char [ matrix_size ] );
-    //cout << "max lines per file = " << m_maxLinesPerFile;
 
 
     int blocksTotal = 0;
@@ -298,10 +314,11 @@ void Duplo::run(std::string outputFileName) {
         std::cout << sourceFiles[i].getFilename();
         int blocks = 0;
         
-        blocks+=process(&sourceFiles[i], &sourceFiles[i], outfile);
+        blocks+=process( sourceFiles[i], sourceFiles[i], outfile );
         for(int j=i+1;j<(int)sourceFiles.size();j++){
-            if ((m_ignoreSameFilename && isSameFilename(sourceFiles[i].getFilename(), sourceFiles[j].getFilename()))==false){
-                blocks+=process(&sourceFiles[i], &sourceFiles[j], outfile);
+
+            if ( ( m_ignoreSameFilename && isSameFilename( sourceFiles[ i ].getFilename(), sourceFiles[j].getFilename() ) ) == false ) {
+                blocks+=process( sourceFiles[ i ], sourceFiles[ j ], outfile );
             }
         }
 

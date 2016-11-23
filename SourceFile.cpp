@@ -58,9 +58,7 @@ SourceFile::SourceFile(const std::string& fileName ) :
 
             for( int j=0 ; j< lineSize ; j++ ) {
 
-                //if(line[j] == '/' && line[std::min(lineSize-1, j+1)] == '*'){
                 if( j < ( lineSize - 1 ) && line.substr( j, 2 ) == "/*" ) {
-                //if( j< ( lineSize -1 ) && line.substr( j, 2 ) == "/*" ) {
 
                     openBlockComments++;
                 }
@@ -70,8 +68,6 @@ SourceFile::SourceFile(const std::string& fileName ) :
                     tmp.push_back(line[j]);
                 }
 
-                //if(line[std::max(0, j-1)] == '*' && line[j] == '/'){
-                //if( j < ( lineSize - 1 ) && line.substr( j, 2 ) == "*/" ) {
                 if( j > 0 && j < ( lineSize ) && line.substr( j - 1, 2 ) == "*/" ) {
 
                     openBlockComments--;
@@ -192,20 +188,26 @@ bool SourceFile::isSourceLine(const std::string& line){
     }
 
     bool bRet = (tmp.size() >= m_minChars);
+
     assert(bRet);
     
     return bRet && std::find_if(tmp.begin(), tmp.end(), isalpha)!=tmp.end();
 }
 
-int SourceFile::getNumOfLinesOfCode(){
-	return (int)m_sourceLines.size();
+int SourceFile::getNumOfLinesOfCode() const
+{
+
+	return static_cast<int>( m_sourceLines.size() );
 }
 
-SourceLine* SourceFile::getLine(const int index){
+SourceLine* SourceFile::getLine(const int index) const
+{
+
 	return m_sourceLines[index];
 }
 
 const std::string& SourceFile::getFilename () const {
+
 	return m_fileName;
 }
 
@@ -218,6 +220,7 @@ void SourceFile::setMinChars( unsigned int a_min_chars )
 {
     m_minChars = a_min_chars;
 }
+
 void SourceFile::setIgnorePreprocessor( bool a_ignore )
 {
     m_ignorePrepStuff = a_ignore;
