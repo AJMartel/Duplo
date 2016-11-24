@@ -1,0 +1,5 @@
+
+
+- Change class SourceFile so that it follows a data oriented design, instead of an object oriented design.
+- Use polymorphism in the case of the report generators, and extract them to new classes.
+- Create a new report that creates html page.
