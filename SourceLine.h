@@ -29,12 +29,12 @@ class SourceLine {
 protected:
     std::string m_line;
     int m_lineNumber;
+    long long m_hashHigh;
+    long long m_hashLow;
     
 public:
     SourceLine(std::string& line, int lineNumber);
     
-    long long m_hashHigh;
-    long long m_hashLow;
     
     int getLineNumber() const;
     const std::string& getLine() const;
