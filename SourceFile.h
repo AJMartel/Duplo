@@ -26,8 +26,9 @@
 #include <vector>
 
 #include "FileType.h"
+#include "SourceLine.h"
 
-class SourceLine;
+//class SourceLine;
 
 class SourceFile {
 protected:
@@ -37,7 +38,7 @@ protected:
     static unsigned int m_minChars;
     static bool m_ignorePrepStuff;
 
-    std::vector<SourceLine*> m_sourceLines;
+    std::vector<SourceLine> m_sourceLines;
 
     int m_linesOfFile = 0;
 

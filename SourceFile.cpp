@@ -38,6 +38,7 @@ SourceFile::SourceFile(const std::string& fileName ) :
 
     //Get lines that the file has.
     m_linesOfFile = lines.size( );
+    m_sourceLines.reserve( m_linesOfFile );
 	
     int openBlockComments = 0;
     int index = 0;
@@ -93,7 +94,8 @@ void SourceFile::AddToLines( const std::string & tmp ,int index )
     
     if(isSourceLine(cleaned)){
 
-        m_sourceLines.push_back(new SourceLine(cleaned, index));
+        //m_sourceLines.push_back(new SourceLine(cleaned, index));
+        m_sourceLines.emplace_back( cleaned, index );
     }
 }
 
@@ -205,7 +207,7 @@ int SourceFile::getNumOfLinesOfCode() const
 const SourceLine& SourceFile::getLine(const int index) const
 {
 
-	return *m_sourceLines[index];
+	return m_sourceLines[index];
 }
 
 const std::string& SourceFile::getFilename () const {

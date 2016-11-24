@@ -122,7 +122,7 @@ int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::
 
     // Compute matrix
     for(unsigned int y=0; y<m; y++){
-        auto pSLine = pSource1.getLine(y);
+        const auto & pSLine = pSource1.getLine(y);
         for(unsigned int x=0; x<n; x++){
 
             if( pSLine.equals( pSource2.getLine( x ) ) ) {
