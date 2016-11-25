@@ -87,7 +87,6 @@ void Duplo::reportSeq(int line1,
             StringUtil::StrSub(tmpstr, "&gt;", ">", -1);
 
             outFile << "            <line Text=\"" << tmpstr << "\"/>" << std::endl;
-            m_DuplicateLines++;
         }
         outFile << "        </lines>" << std::endl;
         outFile << "    </set>" << std::endl;
@@ -98,10 +97,10 @@ void Duplo::reportSeq(int line1,
         outFile << pSource2.getFilename() << "(" << pSource2.getLine(line2).getLineNumber() << ")" << std::endl;
         for(int j=0;j<count;j++){
             outFile << pSource1.getLine(j+line1).getLine() << std::endl;
-            m_DuplicateLines++;
         }
         outFile << std::endl;
     }
+    m_DuplicateLines += count;
 }
 
 int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::ostream& outFile) 
@@ -240,6 +239,14 @@ void Duplo::run(std::string outputFileName) {
             "\" Min_char_line=\"" << m_minChars << 
             "\" Ignore_prepro=\"" << (m_ignorePrepStuff ? "true" : "false") << 
             "\" Ignore_same_filename=\"" << (m_ignoreSameFilename ? "true" : "false") << "\">" << std::endl;
+    }
+    else
+    {
+        outfile << "duplo version=\"" << VERSION << "\"" << std::endl;
+        outfile << "    check Min_block_size=\"" << m_minBlockSize << 
+            "\" Min_char_line=\"" << m_minChars << 
+            "\" Ignore_prepro=\"" << (m_ignorePrepStuff ? "true" : "false") << 
+            "\" Ignore_same_filename=\"" << (m_ignoreSameFilename ? "true" : "false") << "\"" << std::endl << std::endl;
     }
 
     if(!outfile.is_open()) {
