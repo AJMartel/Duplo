@@ -31,6 +31,8 @@
 #include "HashUtil.h"
 #include "TextFile.h"
 #include "ArgumentParser.h"
+#include "TextGenerator.h"
+#include "XMLGenerator.h"
 
 using std::cout;
 using std::endl;
@@ -50,7 +52,8 @@ Duplo::Duplo(
     m_maxLinesPerFile(0),
     m_DuplicateLines(0),
     m_Xml(Xml),
-    m_pMatrix()
+    m_pMatrix(),
+    _report_generator( )
 {
 }
 
@@ -63,43 +66,8 @@ void Duplo::reportSeq(int line1,
                       const SourceFile& pSource1, 
                       const SourceFile& pSource2, 
                       std::ostream& outFile){
-    if (m_Xml)
-    {
-        outFile << "    <set LineCount=\"" << count << "\">" << std::endl;
-        outFile << "        <block SourceFile=\"" << pSource1.getFilename() << "\" StartLineNumber=\"" << pSource1.getLine(line1).getLineNumber() << "\"/>" << std::endl;
-        outFile << "        <block SourceFile=\"" << pSource2.getFilename() << "\" StartLineNumber=\"" << pSource2.getLine(line2).getLineNumber() << "\"/>" << std::endl;
-        outFile << "        <lines xml:space=\"preserve\">" << std::endl;
-        for(int j = 0; j < count; j++)
-        {
-            // replace various characters/ strings so that it doesn't upset the XML parser
-            std::string tmpstr = pSource1.getLine(j+line1).getLine();
 
-            // " --> '
-            StringUtil::StrSub(tmpstr, "\'", "\"", -1);
-
-            // & --> &amp;
-            StringUtil::StrSub(tmpstr, "&amp;", "&", -1);
-
-            // < --> &lt;
-            StringUtil::StrSub(tmpstr, "&lt;", "<", -1);
-
-            // > --> &gt;
-            StringUtil::StrSub(tmpstr, "&gt;", ">", -1);
-
-            outFile << "            <line Text=\"" << tmpstr << "\"/>" << std::endl;
-        }
-        outFile << "        </lines>" << std::endl;
-        outFile << "    </set>" << std::endl;
-    }
-    else
-    {
-        outFile << pSource1.getFilename() << "(" << pSource1.getLine(line1).getLineNumber() << ")" << std::endl;
-        outFile << pSource2.getFilename() << "(" << pSource2.getLine(line2).getLineNumber() << ")" << std::endl;
-        for(int j=0;j<count;j++){
-            outFile << pSource1.getLine(j+line1).getLine() << std::endl;
-        }
-        outFile << std::endl;
-    }
+    _report_generator->reportSeq( line1, line2, count, pSource1, pSource2 );
     m_DuplicateLines += count;
 }
 
@@ -229,30 +197,23 @@ bool Duplo::isSameFilename(const std::string& filename1, const std::string& file
 void Duplo::run(std::string outputFileName) {
 
     std::ofstream outfile(outputFileName.c_str(), std::ios::out|std::ios::binary);
-
-    if (m_Xml)
-    {
-        outfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
-        outfile << "<?xml-stylesheet href=\"duplo.xsl\" type=\"text/xsl\"?>" << std::endl;
-        outfile << "<duplo version=\"" << VERSION << "\">" << std::endl;
-        outfile << "    <check Min_block_size=\"" << m_minBlockSize << 
-            "\" Min_char_line=\"" << m_minChars << 
-            "\" Ignore_prepro=\"" << (m_ignorePrepStuff ? "true" : "false") << 
-            "\" Ignore_same_filename=\"" << (m_ignoreSameFilename ? "true" : "false") << "\">" << std::endl;
-    }
-    else
-    {
-        outfile << "duplo version=\"" << VERSION << "\"" << std::endl;
-        outfile << "    check Min_block_size=\"" << m_minBlockSize << 
-            "\" Min_char_line=\"" << m_minChars << 
-            "\" Ignore_prepro=\"" << (m_ignorePrepStuff ? "true" : "false") << 
-            "\" Ignore_same_filename=\"" << (m_ignoreSameFilename ? "true" : "false") << "\"" << std::endl << std::endl;
-    }
-
+    
     if(!outfile.is_open()) {
         std::cout << "Error: Can't open file: " << outputFileName << std::endl;
         return;
     }
+
+    if( m_Xml )
+    {
+        _report_generator = std::make_unique<XMLGenerator>( outfile );
+    }
+    else
+    {
+        _report_generator = std::make_unique<TextGenerator>( outfile );   
+    }
+
+    _report_generator->writeHeader( m_minBlockSize, m_minChars, m_ignorePrepStuff, m_ignoreSameFilename, VERSION );
+
 
     clock_t start, finish;
     double  duration;
@@ -344,32 +305,7 @@ void Duplo::run(std::string outputFileName) {
     duration = (double)(finish - start) / CLOCKS_PER_SEC;
     std::cout << "Time: "<< duration << " seconds" << std::endl;
 
-    if (m_Xml)
-    {
-        outfile << "        <summary Num_files=\"" << files <<
-            "\" Duplicate_blocks=\"" << blocksTotal <<
-            "\" Total_lines_of_code=\"" << locsTotal <<
-            "\" Duplicate_lines_of_code=\"" << m_DuplicateLines <<
-            "\" Time=\"" << duration <<
-            "\"/>" << std::endl;
-        outfile << "    </check>" << std::endl;
-        outfile << "</duplo>" << std::endl;
-    }
-    else
-    {
-        outfile << "Configuration: " << std::endl;
-        outfile << "  Number of files: " << files << std::endl;
-        outfile << "  Minimal block size: " << m_minBlockSize << std::endl;
-        outfile << "  Minimal characters in line: " << m_minChars << std::endl;
-        outfile << "  Ignore preprocessor directives: " << m_ignorePrepStuff << std::endl;
-        outfile << "  Ignore same filenames: " << m_ignoreSameFilename << std::endl;
-        outfile << std::endl;
-        outfile << "Results: " << std::endl;
-        outfile << "  Lines of code: " << locsTotal << std::endl;
-        outfile << "  Duplicate lines of code: " << m_DuplicateLines << std::endl;
-        outfile << "  Total " << blocksTotal << " duplicate block(s) found." << std::endl << std::endl;
-        outfile << "  Time: " << duration << " seconds" << std::endl;
-    }
+    _report_generator->writeSummary( files, blocksTotal, locsTotal, m_DuplicateLines, duration );
 }
 
 int Clamp (int upper, int lower, int value)

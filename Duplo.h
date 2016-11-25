@@ -27,6 +27,7 @@
 #include <string>
 
 class SourceFile;
+class IOutGenerator;
 
 const std::string VERSION = "0.2.0";
 
@@ -42,6 +43,7 @@ protected:
     int m_DuplicateLines;
     bool m_Xml;
     std::unique_ptr< unsigned char [ ] > m_pMatrix;
+    std::unique_ptr< IOutGenerator> _report_generator;
     long long matrix_size = 0;
 
     void reportSeq(int line1, int line2, int count, const SourceFile& pSource1, const SourceFile& pSource2, std::ostream& outFile);
