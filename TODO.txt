@@ -1,5 +1,8 @@
 
 
 - Change class SourceFile so that it follows a data oriented design, instead of an object oriented design.
-- Use polymorphism in the case of the report generators, and extract them to new classes.
+- ¿Create a factory for extracting the creation of the report generators?
 - Create a new report that creates html page.
+- Try to substitute the matrix of chars for something that uses just one bit for each member, thus
+  saving memory, even if it maybe is slower.
+- Configure the makefile for debug and release.
