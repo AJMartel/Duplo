@@ -81,8 +81,6 @@ int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::
     assert( ( index ) < matrix_size );
 
     // Reset matrix data
-    //memset(m_pMatrix.get( ), NONE, m*n);
-    //m_pMatrix = std::vector<bool>( m*n, 0 );
     std::fill( m_pMatrix.begin( ), m_pMatrix.begin( ) + ( m * n ) , false );
 
     // Compute matrix
@@ -91,7 +89,7 @@ int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::
         for(unsigned int x=0; x<n; x++){
 
             if( pSLine.equals( pSource2.getLine( x ) ) ) {
-                m_pMatrix[x+n*y] = true;
+                m_pMatrix.at( x+n*y ) = true;
             }
         }
     }
@@ -115,7 +113,7 @@ int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::
         int maxX = std::min(n, m-y);
         for(int x=0; x<maxX; x++){
 
-            if(m_pMatrix[x+n*(y+x)] == true ){
+            if(m_pMatrix.at( x+n*(y+x) ) == true ){
 
 
                 seqLen++;
@@ -154,7 +152,7 @@ int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::
             unsigned int seqLen=0;
             int maxY = std::min(m, n-x);
             for(int y=0; y<maxY; y++){
-                if(m_pMatrix[x+y+n*y] == true ){
+                if(m_pMatrix.at( x+y+n*y ) == true ){
                     seqLen++;
                 } else {
                     if(seqLen >= lMinBlockSize){
@@ -232,8 +230,6 @@ void Duplo::run(std::string outputFileName) {
     int files = 0;
     int locsTotal = 0;
 
-    //I add a max number of lines, because for some files it crashed
-    int max_lines_of_file = 50000;
 
     //Set values for processing of files.
     SourceFile::setMinChars( m_minChars );
@@ -247,7 +243,7 @@ void Duplo::run(std::string outputFileName) {
             SourceFile sf( line );
             int numLines = sf.getNumOfLinesOfFile();
 
-            if(numLines > 0 && numLines < max_lines_of_file ) {
+            if(numLines > 0 ) {
 
                 files++;
                 sourceFiles.push_back( std::move( sf ) );
@@ -268,12 +264,17 @@ void Duplo::run(std::string outputFileName) {
     std::cout << "done.\n\n";
 
     // Generate matrix large enough for all files
-    matrix_size = m_maxLinesPerFile * m_maxLinesPerFile;
-    //m_pMatrix = std::make_unique< unsigned char [ ] >( matrix_size );
+    matrix_size = (long)m_maxLinesPerFile * m_maxLinesPerFile;
     m_pMatrix = std::vector<bool>( matrix_size, false );
+    std::cout << "Max size of long = " << std::numeric_limits<long>::max( ) << endl;
+    std::cout << "Try to reserve a vector with " << matrix_size << " elements" << endl;
+    std::cout << "Maximum size of a 'vector' is " << m_pMatrix.max_size() << "\n";
 
 
     int blocksTotal = 0;
+
+    try
+    {
 
     // Compare each file with each other
     for(int i=0;i<(int)sourceFiles.size();i++){
@@ -298,6 +299,12 @@ void Duplo::run(std::string outputFileName) {
 
         blocksTotal+=blocks;
     }
+    }
+    catch( std::out_of_range & exc )
+    {
+        cout << "Out range error " << exc.what( ) << endl << endl;
+    }
+
 
 
     finish = clock();

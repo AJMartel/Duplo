@@ -46,7 +46,7 @@ protected:
     //std::unique_ptr< unsigned char [ ] > m_pMatrix;
     std::vector<bool> m_pMatrix;
     std::unique_ptr< IOutGenerator> _report_generator;
-    long long matrix_size = 0;
+    long matrix_size = 0;
 
     void reportSeq(int line1, int line2, int count, const SourceFile& pSource1, const SourceFile& pSource2, std::ostream& outFile);
     int process( const SourceFile& pSource1, const SourceFile& pSource2, std::ostream& outFile);
