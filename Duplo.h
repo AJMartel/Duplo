@@ -25,6 +25,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 class SourceFile;
 class IOutGenerator;
@@ -42,7 +43,8 @@ protected:
     int m_maxLinesPerFile;
     int m_DuplicateLines;
     bool m_Xml;
-    std::unique_ptr< unsigned char [ ] > m_pMatrix;
+    //std::unique_ptr< unsigned char [ ] > m_pMatrix;
+    std::vector<bool> m_pMatrix;
     std::unique_ptr< IOutGenerator> _report_generator;
     long long matrix_size = 0;
 

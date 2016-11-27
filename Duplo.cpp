@@ -78,14 +78,16 @@ int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::
     const unsigned int n = pSource2.getNumOfLinesOfCode();
 
 
-    const unsigned char NONE = 0;
-    const unsigned char MATCH = 1;
+    //const unsigned char NONE = 0;
+    //const unsigned char MATCH = 1;
 
     long long index = m * n;
     assert( ( index ) < matrix_size );
 
     // Reset matrix data
-    memset(m_pMatrix.get( ), NONE, m*n);
+    //memset(m_pMatrix.get( ), NONE, m*n);
+    //m_pMatrix = std::vector<bool>( m*n, 0 );
+    std::fill( m_pMatrix.begin( ), m_pMatrix.begin( ) + ( m * n ) , false );
 
     // Compute matrix
     for(unsigned int y=0; y<m; y++){
@@ -93,7 +95,7 @@ int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::
         for(unsigned int x=0; x<n; x++){
 
             if( pSLine.equals( pSource2.getLine( x ) ) ) {
-                m_pMatrix[x+n*y] = MATCH;
+                m_pMatrix[x+n*y] = true;
             }
         }
     }
@@ -117,7 +119,7 @@ int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::
         int maxX = std::min(n, m-y);
         for(int x=0; x<maxX; x++){
 
-            if(m_pMatrix[x+n*(y+x)] == MATCH){
+            if(m_pMatrix[x+n*(y+x)] == true ){
 
 
                 seqLen++;
@@ -156,7 +158,7 @@ int Duplo::process(const SourceFile& pSource1, const SourceFile& pSource2, std::
             unsigned int seqLen=0;
             int maxY = std::min(m, n-x);
             for(int y=0; y<maxY; y++){
-                if(m_pMatrix[x+y+n*y] == MATCH){
+                if(m_pMatrix[x+y+n*y] == true ){
                     seqLen++;
                 } else {
                     if(seqLen >= lMinBlockSize){
@@ -249,7 +251,7 @@ void Duplo::run(std::string outputFileName) {
             SourceFile sf( line );
             int numLines = sf.getNumOfLinesOfFile();
 
-            if(numLines > 0 && numLines < max_lines_of_file) {
+            if(numLines > 0 && numLines < max_lines_of_file ) {
 
                 files++;
                 sourceFiles.push_back( std::move( sf ) );
@@ -271,7 +273,8 @@ void Duplo::run(std::string outputFileName) {
 
     // Generate matrix large enough for all files
     matrix_size = m_maxLinesPerFile * m_maxLinesPerFile;
-    m_pMatrix = std::make_unique< unsigned char [ ] >( matrix_size );
+    //m_pMatrix = std::make_unique< unsigned char [ ] >( matrix_size );
+    m_pMatrix = std::vector<bool>( matrix_size, false );
 
 
     int blocksTotal = 0;
