@@ -2,7 +2,6 @@
 #include "XMLGenerator.h"
 #include "SourceFile.h"
 #include "StringUtil.h"
-#include "TextGenerator.h"
 #include <fstream>
 
 XMLGenerator::XMLGenerator( std::ofstream & outfile ) :

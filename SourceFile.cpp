@@ -16,7 +16,6 @@
 
 #include "SourceFile.h"
 
-#include "SourceLine.h"
 #include "TextFile.h"
 #include "StringUtil.h"
 

@@ -16,7 +16,6 @@
 
 #include "StringUtil.h"
 
-#include <ctype.h>
 #include <sstream>
 
 /**

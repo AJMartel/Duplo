@@ -21,14 +21,10 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstring>
-#include <iostream>
 
 #include "SourceFile.h"
-#include "SourceLine.h"
 
 #include "StringUtil.h"
-#include "HashUtil.h"
 #include "TextFile.h"
 #include "ArgumentParser.h"
 #include "TextGenerator.h"
