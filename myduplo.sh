@@ -2,7 +2,7 @@
 
 rm -rf duplo_list.txt
 
-find -name "*.cpp" >> duplo_list.txt
+find -name "*.cpp" ! -name "moc_*.cpp" >> duplo_list.txt
 find -name "*.cc" >> duplo_list.txt
 find -name "*.h" >> duplo_list.txt
 find -name "*.hh" >> duplo_list.txt
